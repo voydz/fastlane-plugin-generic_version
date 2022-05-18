@@ -1,0 +1,3 @@
+lane :test do
+  generic_version
+end
