@@ -1,5 +1,4 @@
 require 'fastlane/action'
-require 'fastlane/action'
 require_relative '../helper/generic_version_helper'
 
 module Fastlane
@@ -11,12 +10,17 @@ module Fastlane
 
         if platform == :android
           # android
-          Helper::GenericVersionHelper.load_dependencies
+          Helper::GenericVersionHelper.load_dependencies('fastlane-plugin-versioning_android')
 
           build = other_action.android_get_version_code
-        else 
+        else
           # ios or osx
-          build = other_action.get_build_number
+          Helper::GenericVersionHelper.load_dependencies('fastlane-plugin-versioning')
+
+          build = other_action.get_build_number_from_xcodeproj(
+            target: params[:target],
+            scheme: params[:scheme]
+          )
         end
 
         build
@@ -39,7 +43,18 @@ module Fastlane
       end
 
       def self.available_options
-        []
+        [
+          FastlaneCore::ConfigItem.new(key: :target,
+                                      env_name: "GENERIC_VERSION_APP_TARGET",
+                                      optional: true,
+                                      conflicting_options: [:scheme],
+                                      description: "Specify a specific target if you have multiple per project, optional"),
+          FastlaneCore::ConfigItem.new(key: :scheme,
+                                       env_name: "GENERIC_VERSION_APP_SCHEME",
+                                       optional: true,
+                                       conflicting_options: [:target],
+                                       description: "Specify a specific scheme if you have multiple per project, optional")
+        ]
       end
 
       def self.is_supported?(platform)

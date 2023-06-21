@@ -1,5 +1,4 @@
 require 'fastlane/action'
-require 'fastlane/action'
 require_relative '../helper/generic_version_helper'
 
 module Fastlane
@@ -11,15 +10,19 @@ module Fastlane
 
         new_version = other_action.set_app_version(
           version: version,
+          target: params[:target],
+          scheme: params[:scheme]
         )
 
         new_build = other_action.set_app_build(
-          build: build
+          build: build,
+          target: params[:target],
+          scheme: params[:scheme]
         )
 
-        UI.important "New version is:"
-        UI.message "  Version: #{new_version}"
-        UI.message "  Build: #{new_build}"
+        UI.important("New version is:")
+        UI.message("  Version: #{new_version}")
+        UI.message("  Build: #{new_build}")
 
         version
       end
@@ -51,7 +54,17 @@ module Fastlane
                                        env_name: "GENERIC_VERSION_SET_APP_BUILD",
                                        description: "App build",
                                        optional: true,
-                                       type: String)
+                                       type: String),
+          FastlaneCore::ConfigItem.new(key: :target,
+                                       env_name: "GENERIC_VERSION_APP_TARGET",
+                                       optional: true,
+                                       conflicting_options: [:scheme],
+                                       description: "Specify a specific target if you have multiple per project, optional"),
+          FastlaneCore::ConfigItem.new(key: :scheme,
+                                      env_name: "GENERIC_VERSION_APP_SCHEME",
+                                      optional: true,
+                                      conflicting_options: [:target],
+                                      description: "Specify a specific scheme if you have multiple per project, optional")
         ]
       end
 

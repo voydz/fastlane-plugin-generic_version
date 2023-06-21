@@ -1,5 +1,4 @@
 require 'fastlane/action'
-require 'fastlane/action'
 require_relative '../helper/generic_version_helper'
 
 module Fastlane
@@ -16,15 +15,19 @@ module Fastlane
 
         if platform == :android
           # android
-          Helper::GenericVersionHelper.load_dependencies
+          Helper::GenericVersionHelper.load_dependencies('fastlane-plugin-versioning_android')
 
           build = other_action.android_set_version_code(
-            version_code: build,
+            version_code: build
           )
-        else 
+        else
           # ios or osx
-          build = other_action.increment_build_number(
+          Helper::GenericVersionHelper.load_dependencies('fastlane-plugin-versioning')
+
+          build = other_action.increment_build_number_in_xcodeproj(
             build_number: build,
+            target: params[:target],
+            scheme: params[:scheme]
           )
         end
 
@@ -50,10 +53,20 @@ module Fastlane
       def self.available_options
         [
           FastlaneCore::ConfigItem.new(key: :build,
-                                       env_name: "APP_BUILD",
+                                       env_name: "GENERIC_VERSION_SET_APP_BUILD",
                                        description: "Build",
                                        optional: true,
-                                       type: String)
+                                       type: String),
+          FastlaneCore::ConfigItem.new(key: :target,
+                                      env_name: "GENERIC_VERSION_APP_TARGET",
+                                      optional: true,
+                                      conflicting_options: [:scheme],
+                                      description: "Specify a specific target if you have multiple per project, optional"),
+          FastlaneCore::ConfigItem.new(key: :scheme,
+                                      env_name: "GENERIC_VERSION_APP_SCHEME",
+                                      optional: true,
+                                      conflicting_options: [:target],
+                                      description: "Specify a specific scheme if you have multiple per project, optional")
         ]
       end
 

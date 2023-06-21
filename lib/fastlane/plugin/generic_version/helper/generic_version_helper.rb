@@ -1,7 +1,7 @@
 require 'fastlane_core/ui/ui'
 
 module Fastlane
-  UI = FastlaneCore::UI unless Fastlane.const_defined?("UI")
+  UI = FastlaneCore::UI unless Fastlane.const_defined?(:UI)
 
   module Helper
     class GenericVersionHelper
@@ -31,16 +31,12 @@ module Fastlane
         # we implement our own version bumping here
         version_array = current_version.split(".").map(&:to_i)
         version_array[-1] = version_array[-1] + 1
-        next_version_number = version_array.join(".")
-
-        next_version_number
+        version_array.join(".")
       end
 
-      def self.load_dependencies
+      def self.load_dependencies(plugin_name)
         # this is a hack to install missing plugins in the host project
         # better solution for @link https://github.com/fastlane/fastlane/issues/16650
-        plugin_name = 'fastlane-plugin-versioning_android'
-
         unless Fastlane.plugin_manager.plugin_is_added_as_dependency?(plugin_name)
           Fastlane.plugin_manager.add_dependency(plugin_name)
           Fastlane.plugin_manager.load_plugins

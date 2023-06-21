@@ -35,6 +35,13 @@ To automatically fix many of the styling issues, use
 rubocop -a
 ```
 
+To install and/or release
+```
+bundle install
+rake install
+rake release
+```
+
 ## Issues and Feedback
 
 For any other issues and feedback about this plugin, please submit it to this repository.

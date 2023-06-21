@@ -1,5 +1,4 @@
 require 'fastlane/action'
-require 'fastlane/action'
 require_relative '../helper/generic_version_helper'
 
 module Fastlane
@@ -13,21 +12,28 @@ module Fastlane
           UI.important("No specific version was given. The current version will be incremented.")
 
           # increment current version number
-          current_version = Helper::GenericVersionHelper.sanitize_version(other_action.get_app_version)
+          current_version = Helper::GenericVersionHelper.sanitize_version(other_action.get_app_version(
+                                                                            target: params[:target],
+                                                                            scheme: params[:scheme]
+                                                                          ))
           version = Helper::GenericVersionHelper.bump_version(current_version)
         end
 
         if platform == :android
           # android
-          Helper::GenericVersionHelper.load_dependencies
+          Helper::GenericVersionHelper.load_dependencies('fastlane-plugin-versioning_android')
 
           version = other_action.android_set_version_name(
-            version_name: version,
+            version_name: version
           )
-        else 
+        else
           # ios or osx
-          version = other_action.increment_version_number(
+          Helper::GenericVersionHelper.load_dependencies('fastlane-plugin-versioning')
+
+          version = other_action.increment_version_number_in_xcodeproj(
             version_number: version,
+            target: params[:target],
+            scheme: params[:scheme]
           )
         end
 
@@ -43,7 +49,7 @@ module Fastlane
       end
 
       def self.return_value
-         "The new app version"
+        "The new app version"
       end
 
       def self.details
@@ -53,10 +59,20 @@ module Fastlane
       def self.available_options
         [
           FastlaneCore::ConfigItem.new(key: :version,
-                                       env_name: "APP_VERSION",
+                                       env_name: "GENERIC_VERSION_SET_APP_VERSION",
                                        description: "Version",
                                        optional: true,
                                        type: String),
+          FastlaneCore::ConfigItem.new(key: :target,
+                                       env_name: "GENERIC_VERSION_APP_TARGET",
+                                       optional: true,
+                                       conflicting_options: [:scheme],
+                                       description: "Specify a specific target if you have multiple per project, optional"),
+          FastlaneCore::ConfigItem.new(key: :scheme,
+                                      env_name: "GENERIC_VERSION_APP_SCHEME",
+                                      optional: true,
+                                      conflicting_options: [:target],
+                                      description: "Specify a specific scheme if you have multiple per project, optional")
         ]
       end
 
